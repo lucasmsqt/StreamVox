@@ -3,7 +3,7 @@ extern crate widestring;
 
 use winapi::um::{
     combaseapi::{CoInitializeEx, CoCreateInstance, CoUninitialize},
-    objbase::COINIT_MULTITHREADED,
+    objbase::COINIT_APARTMENTTHREADED,
     coml2api::STGM_READ,
     functiondiscoverykeys_devpkey::PKEY_Device_FriendlyName,
     mmdeviceapi::{IMMDeviceEnumerator, CLSID_MMDeviceEnumerator, IMMDeviceCollection, IMMDevice, eRender, DEVICE_STATE_ACTIVE},
@@ -23,8 +23,9 @@ extern "C" {
 
 pub fn list_audio_devices() -> Result<Vec<String>, Box<dyn std::error::Error>> {
     unsafe {
-        if CoInitializeEx(ptr::null_mut(), COINIT_MULTITHREADED) != S_OK {
-            return Err("Falha ao inicializar COM".into());
+        let hr = CoInitializeEx(ptr::null_mut(), COINIT_APARTMENTTHREADED);
+        if hr != S_OK && hr != winapi::shared::winerror::S_FALSE {
+            return Err(format!("Falha ao inicializar COM, código: 0x{:X}", hr).into());
         }
 
         let pclsid = CLSID_MMDeviceEnumerator;
@@ -32,14 +33,14 @@ pub fn list_audio_devices() -> Result<Vec<String>, Box<dyn std::error::Error>> {
         let hr = CoCreateInstance(&pclsid, ptr::null_mut(), CLSCTX_ALL, &IMMDeviceEnumerator::uuidof(), &mut enumerator as *mut _ as *mut _);
         if hr != S_OK {
             CoUninitialize();
-            return Err("Falha ao criar instância do enumerador de dispositivos".into());
+            return Err(format!("Falha ao criar instância do enumerador de dispositivos, código: 0x{:X}", hr).into());
         }
 
         let mut devices_ptr: *mut IMMDeviceCollection = ptr::null_mut();
         let hr = (*enumerator).EnumAudioEndpoints(eRender, DEVICE_STATE_ACTIVE, &mut devices_ptr);
         if hr != S_OK {
             CoUninitialize();
-            return Err("Falha ao enumerar dispositivos de áudio".into());
+            return Err(format!("Falha ao enumerar dispositivos de áudio, código: 0x{:X}", hr).into());
         }
 
         let devices = &*devices_ptr;
