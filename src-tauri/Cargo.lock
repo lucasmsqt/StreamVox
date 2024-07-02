@@ -2459,6 +2459,8 @@ dependencies = [
  "serde_json",
  "tauri",
  "tauri-build",
+ "widestring",
+ "winapi",
 ]
 
 [[package]]
@@ -3315,6 +3317,12 @@ dependencies = [
  "windows-bindgen",
  "windows-metadata",
 ]
+
+[[package]]
+name = "widestring"
+version = "0.4.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c168940144dd21fd8046987c16a46a33d5fc84eec29ef9dcddc2ac9e31526b7c"
 
 [[package]]
 name = "winapi"
