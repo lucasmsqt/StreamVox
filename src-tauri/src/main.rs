@@ -2,9 +2,16 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
+mod audio_apps;
+
 #[tauri::command]
+
 fn greet(name: &str) -> String {
     format!("Hello, {}! You've been greeted from Rust!", name)
+}
+
+fn get_audio_apps() -> Vec<String> {
+    audio_apps::list_audio_playing_apps()
 }
 
 fn main() {
